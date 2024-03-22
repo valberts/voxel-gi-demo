@@ -1,20 +1,27 @@
 use std::env::current_dir;
 use std::fs;
 
+use wgpu::BindGroupLayout;
+
+use crate::Vertex;
+// use obj::Vertex;
+
 pub struct PipelineBuilder {
     shader_filename: String,
     vertex_entry: String,
     fragment_entry: String,
     pixel_format: wgpu::TextureFormat,
+    texture_bind_group_layout: BindGroupLayout,
 }
 
 impl PipelineBuilder {
-    pub fn new() -> Self {
+    pub fn new(texture_bind_group_layout: BindGroupLayout) -> Self {
         PipelineBuilder {
             shader_filename: "dummy".to_string(),
             vertex_entry: "dummy".to_string(),
             fragment_entry: "dummy".to_string(),
             pixel_format: wgpu::TextureFormat::Rgba8Unorm,
+            texture_bind_group_layout: texture_bind_group_layout,
         }
     }
 
@@ -48,7 +55,7 @@ impl PipelineBuilder {
 
         let pipeline_layout_descriptor = wgpu::PipelineLayoutDescriptor {
             label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[],
+            bind_group_layouts: &[&self.texture_bind_group_layout],
             push_constant_ranges: &[],
         };
         let render_pipeline_layout = device.create_pipeline_layout(&pipeline_layout_descriptor);
@@ -66,7 +73,7 @@ impl PipelineBuilder {
             vertex: wgpu::VertexState {
                 module: &shader_module,
                 entry_point: &self.vertex_entry,
-                buffers: &[],
+                buffers: &[Vertex::desc()],
             },
 
             primitive: wgpu::PrimitiveState {
